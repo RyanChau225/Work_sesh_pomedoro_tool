@@ -40,7 +40,7 @@ class WorkLoggerApp:
     def __init__(self, root):
         self.root = root
         self.root.title("Work Session Logger")
-        self.root.geometry("800x750") # Adjusted size for larger fonts
+        self.root.geometry("800x750") # Increased window size
 
         self.is_session_active = False
         self.session_start_time = None
@@ -56,20 +56,18 @@ class WorkLoggerApp:
             messagebox.showerror("Mixer Error", f"Could not initialize audio mixer: {e}\nMusic playback will be disabled.")
             # Optionally disable music features if mixer fails
 
-        # Style configuration - Increased font sizes
+        # Style configuration - Larger fonts
         style = ttk.Style()
         style.configure("Treeview.Heading", font=("Arial", 12, "bold"))
-        # For parent items (dates)
-        style.configure("Date.Treeview", font=("Arial", 11, "bold")) 
-        # For child items (sessions) - can use default or create another
-        style.configure("Session.Treeview", font=("Arial", 10))
+        style.configure("Date.Treeview", font=("Arial", 11, "bold"), rowheight=28) 
+        style.configure("Session.Treeview", font=("Arial", 10), rowheight=25)
         style.configure("TButton", font=("Arial", 11), padding=6)
         style.configure("TLabel", font=("Arial", 11), padding=5)
         style.configure("TLabelframe.Label", font=("Arial", 12, "bold"))
-        style.configure("TCheckbutton", font=("Arial", 11))
+        style.configure("TCheckbutton", font=("Arial", 11), padding=5)
 
         # UI Elements
-        self.main_frame = ttk.Frame(self.root, padding="15 15 15 15") # Increased padding
+        self.main_frame = ttk.Frame(self.root, padding="15 15 15 15")
         self.main_frame.pack(fill=tk.BOTH, expand=True)
 
         self.status_label = ttk.Label(self.main_frame, text="No session active.", font=("Arial", 14, "italic"))
@@ -88,20 +86,20 @@ class WorkLoggerApp:
         self.music_frame.pack(fill=tk.X, pady=(10,10))
 
         self.select_music_button = ttk.Button(self.music_frame, text="Select Music Track", command=self.select_music_track)
-        self.select_music_button.pack(side=tk.LEFT, padx=(0,15))
+        self.select_music_button.pack(side=tk.LEFT, padx=(0,10))
 
         self.selected_music_label = ttk.Label(self.music_frame, text="No track selected.", width=35, anchor=tk.W)
-        self.selected_music_label.pack(side=tk.LEFT, padx=(0,15))
+        self.selected_music_label.pack(side=tk.LEFT, padx=(0,10))
 
         self.volume_label = ttk.Label(self.music_frame, text="Volume:")
-        self.volume_label.pack(side=tk.LEFT, padx=(10,5))
+        self.volume_label.pack(side=tk.LEFT, padx=(10,0))
 
-        self.volume_var = tk.DoubleVar(value=0.75) # Default volume 75%
-        self.volume_scale = ttk.Scale(self.music_frame, from_=0, to=1, variable=self.volume_var, orient=tk.HORIZONTAL, command=self.set_volume, length=120)
-        self.volume_scale.pack(side=tk.LEFT, padx=(5,15))
+        self.volume_var = tk.DoubleVar(value=0.5) # Default volume 50%
+        self.volume_scale = ttk.Scale(self.music_frame, from_=0, to=1, variable=self.volume_var, orient=tk.HORIZONTAL, command=self.set_volume)
+        self.volume_scale.pack(side=tk.LEFT, padx=(5,10), fill=tk.X, expand=True)
 
         self.test_volume_button = ttk.Button(self.music_frame, text="Test", command=self.test_volume)
-        self.test_volume_button.pack(side=tk.LEFT)
+        self.test_volume_button.pack(side=tk.LEFT, padx=(10,0))
 
         self.toggle_button = ttk.Button(self.main_frame, text="Start Session", command=self.toggle_session)
         self.toggle_button.pack(pady=(20,20))
@@ -117,12 +115,10 @@ class WorkLoggerApp:
         self.log_tree.heading("End", text="End Time")
         self.log_tree.heading("Duration", text="Duration")
 
-        self.log_tree.column("Info", width=350, anchor=tk.W) # Increased width
+        self.log_tree.column("Info", width=350, anchor=tk.W)
         self.log_tree.column("Start", width=120, anchor=tk.CENTER)
         self.log_tree.column("End", width=120, anchor=tk.CENTER)
-        self.log_tree.column("Duration", width=110, anchor=tk.CENTER)
-        # Set row height for Treeview items
-        style.configure("Treeview", rowheight=30, font=("Arial", 10)) # General row height for all items, specific tags will override font
+        self.log_tree.column("Duration", width=120, anchor=tk.CENTER)
 
         self.log_tree.pack(fill=tk.BOTH, expand=True, side=tk.LEFT)
         scrollbar = ttk.Scrollbar(self.log_frame, orient=tk.VERTICAL, command=self.log_tree.yview)
@@ -130,9 +126,6 @@ class WorkLoggerApp:
         scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
         
         self.load_logs()
-        # Set initial volume on app start if music was loaded
-        if self.selected_music_track and pygame.mixer.get_init():
-            pygame.mixer.music.set_volume(self.volume_var.get())
         self.root.protocol("WM_DELETE_WINDOW", self.on_closing) # Handle window close
 
     def select_music_track(self):
